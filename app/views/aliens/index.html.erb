@@ -1,0 +1,23 @@
+<h1>Listing aliens</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @aliens.each do |alien| %>
+  <tr>
+    <td><%= alien.name %></td>
+    <td><%= link_to 'Show', alien %></td>
+    <td><%= link_to 'Edit', edit_alien_path(alien) %></td>
+    <td><%= link_to 'Destroy', alien, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Alien', new_alien_path %>
