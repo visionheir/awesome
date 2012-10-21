@@ -45,6 +45,7 @@ class PiratesController < ApplicationController
     respond_to do |format|
       if @pirate.save
         format.html { redirect_to @pirate, notice: 'Pirate was successfully created.' }
+        format.js 
         format.json { render json: @pirate, status: :created, location: @pirate }
       else
         format.html { render action: "new" }

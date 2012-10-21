@@ -1,23 +1,9 @@
-<h1>Listing pirates</h1>
-
-<table>
-  <tr>
-    <th>Name</th>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
-
-<% @pirates.each do |pirate| %>
-  <tr>
-    <td><%= pirate.name %></td>
-    <td><%= link_to 'Show', pirate %></td>
-    <td><%= link_to 'Edit', edit_pirate_path(pirate) %></td>
-    <td><%= link_to 'Destroy', pirate, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-  </tr>
+<%= form_tag '/pirates', :remote => true do %>
+	Name: 
+<%= text_field_tag 'pirate[name]' %> <br>
+	<%= submit_tag 'Create a new pirate!' %>
 <% end %>
-</table>
 
-<br />
-
-<%= link_to 'New Pirate', new_pirate_path %>
+<div id='pirates'>
+<%= render :partial => 'shared/pirate', :collection => @pirates, :as => :p %>
+</div>
