@@ -1,0 +1,942 @@
+{%- liquid
+  assign ready_count = 0
+  for block in section.blocks
+    if block.settings.title != blank and block.settings.review != blank
+      assign ready_count = ready_count | plus: 1
+    endif
+  endfor
+
+  if request.design_mode
+    assign card_count = section.blocks.size
+  else
+    assign card_count = ready_count
+  endif
+-%}
+
+{%- if card_count > 0 or request.design_mode -%}
+  <crunchy-vet-reviews
+    class="crunchy-vet"
+    style="--cv-bg: {{ section.settings.background }}; --cv-text: {{ section.settings.text_color }}; --cv-pt: {{ section.settings.padding_top }}px; --cv-pb: {{ section.settings.padding_bottom }}px;"
+  >
+    <section
+      class="crunchy-vet__panel"
+      {% if section.settings.heading != blank %}
+        aria-labelledby="CrunchyVetHeading-{{ section.id }}"
+      {% endif %}
+    >
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="crunchy-vet__eyebrow">
+          <span class="crunchy-vet__eyebrow-label">
+            <span aria-hidden="true">(</span>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3H5a1 1 0 0 0-1 1v5a5 5 0 0 0 10 0V4a1 1 0 0 0-1-1h-1"/><path d="M9 14v1a5 5 0 0 0 10 0v-2"/><circle cx="19" cy="11" r="2"/></svg>
+            {{ section.settings.eyebrow | escape }}
+            <span aria-hidden="true">)</span>
+          </span>
+        </p>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 id="CrunchyVetHeading-{{ section.id }}" class="crunchy-vet__heading">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- endif -%}
+
+      {%- if section.settings.subheading != blank or section.settings.link_url != blank -%}
+        <div class="crunchy-vet__sub">
+          {{ section.settings.subheading }}
+          {%- if section.settings.link_url != blank and section.settings.link_label != blank -%}
+            <a class="crunchy-vet__link" href="{{ section.settings.link_url }}">
+              {{- section.settings.link_label | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <ul class="crunchy-vet__track{% if card_count == 1 %} is-single{% endif %}" role="list" data-track>
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign is_ready = false
+            if block.settings.title != blank and block.settings.review != blank
+              assign is_ready = true
+            endif
+          -%}
+          {%- if is_ready or request.design_mode -%}
+            <li class="crunchy-vet__card" data-card {{ block.shopify_attributes }}>
+              <div class="crunchy-vet__profile">
+                <div class="crunchy-vet__person">
+                  {%- if block.settings.photo != blank -%}
+                    {{
+                      block.settings.photo
+                      | image_url: width: 144
+                      | image_tag:
+                        width: 44,
+                        height: 44,
+                        widths: '48, 96, 144',
+                        sizes: '44px',
+                        loading: 'lazy',
+                        alt: '',
+                        class: 'crunchy-vet__avatar'
+                    }}
+                  {%- else -%}
+                    <span class="crunchy-vet__avatar crunchy-vet__avatar--empty" aria-hidden="true">
+                      <svg focusable="false" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="16.5" rx="4.6" ry="3.8"/><ellipse cx="6.2" cy="10.6" rx="1.9" ry="2.4"/><ellipse cx="9.6" cy="6.6" rx="1.9" ry="2.5"/><ellipse cx="14.4" cy="6.6" rx="1.9" ry="2.5"/><ellipse cx="17.8" cy="10.6" rx="1.9" ry="2.4"/></svg>
+                    </span>
+                  {%- endif -%}
+                  <div>
+                    <p class="crunchy-vet__name">
+                      {%- if block.settings.title == blank -%}
+                        <span class="crunchy-vet__placeholder">Veterinarian name</span>
+                      {%- elsif block.settings.profile_url != blank -%}
+                        <a href="{{ block.settings.profile_url }}">{{ block.settings.title | escape }}</a>
+                      {%- else -%}
+                        {{ block.settings.title | escape }}
+                      {%- endif -%}
+                    </p>
+                    {%- if block.settings.verified_label != blank -%}
+                      <p class="crunchy-vet__verified">
+                        {{ block.settings.verified_label | escape }}
+                        <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="currentColor" opacity=".28"/><path d="M4.6 8.3l2.1 2.1 4.7-4.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </p>
+                    {%- endif -%}
+                  </div>
+                </div>
+
+                {%- if block.settings.detail_1_value != blank or block.settings.detail_2_value != blank -%}
+                  <dl class="crunchy-vet__details">
+                    {%- if block.settings.detail_1_value != blank -%}
+                      <div>
+                        <dt>{{ block.settings.detail_1_label | escape }}</dt>
+                        <dd>{{ block.settings.detail_1_value | escape }}</dd>
+                      </div>
+                    {%- endif -%}
+                    {%- if block.settings.detail_2_value != blank -%}
+                      <div>
+                        <dt>{{ block.settings.detail_2_label | escape }}</dt>
+                        <dd>{{ block.settings.detail_2_value | escape }}</dd>
+                      </div>
+                    {%- endif -%}
+                  </dl>
+                {%- endif -%}
+              </div>
+
+              <div class="crunchy-vet__content">
+                {%- if block.settings.headline != blank -%}
+                  <h3 class="crunchy-vet__headline">{{ block.settings.headline | escape }}</h3>
+                {%- endif -%}
+
+                {%- if block.settings.review != blank -%}
+                  <div id="CrunchyVetReview-{{ section.id }}-{{ block.id }}" class="crunchy-vet__review">
+                    {{ block.settings.review }}
+                  </div>
+                  <button
+                    type="button"
+                    class="crunchy-vet__more"
+                    aria-expanded="false"
+                    aria-controls="CrunchyVetReview-{{ section.id }}-{{ block.id }}"
+                    data-more
+                    hidden
+                  >
+                    Show more
+                  </button>
+                {%- else -%}
+                  <p class="crunchy-vet__placeholder">
+                    Add this veterinarian's evaluation in their own words. The card stays hidden on your live store
+                    until a name and evaluation are added.
+                  </p>
+                {%- endif -%}
+
+                {%- if block.settings.source_label != blank -%}
+                  {%- capture chip_content -%}
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M4 1.8h5.2L12 4.6v9.6H4z"/><path d="M9 1.8v3h3"/></svg>
+                    <span>{{ block.settings.source_label | escape }}</span>
+                  {%- endcapture -%}
+                  {%- if block.settings.source_url != blank -%}
+                    <a class="crunchy-vet__chip" href="{{ block.settings.source_url }}" target="_blank" rel="noopener">
+                      {{- chip_content -}}
+                      <span class="crunchy-vet__sr">(opens in a new tab)</span>
+                    </a>
+                  {%- else -%}
+                    <span class="crunchy-vet__chip">{{ chip_content }}</span>
+                  {%- endif -%}
+                {%- endif -%}
+
+                {%- if block.settings.highlights != blank -%}
+                  {%- assign highlights = block.settings.highlights | split: ',' -%}
+                  <div class="crunchy-vet__highlights">
+                    {%- if section.settings.highlights_label != blank -%}
+                      <span class="crunchy-vet__highlights-label">{{ section.settings.highlights_label | escape }}</span>
+                    {%- endif -%}
+                    <ul role="list">
+                      {%- for highlight in highlights -%}
+                        {%- assign highlight = highlight | strip -%}
+                        {%- if highlight != blank -%}
+                          <li>{{ highlight | escape }}</li>
+                        {%- endif -%}
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                {%- endif -%}
+              </div>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      <div class="crunchy-vet__dots" role="group" aria-label="Reviews" data-dots hidden></div>
+    </section>
+  </crunchy-vet-reviews>
+{%- endif -%}
+
+{% stylesheet %}
+  .crunchy-vet {
+    --cv-line: rgba(0, 0, 0, 0.12);
+    --cv-muted: var(--cv-text);
+    --cv-tint: rgba(0, 0, 0, 0.05);
+    display: block;
+    padding: var(--cv-pt) 0 var(--cv-pb);
+  }
+
+  @supports (color: color-mix(in srgb, red 50%, blue)) {
+    .crunchy-vet {
+      --cv-line: color-mix(in srgb, var(--cv-text) 16%, transparent);
+      --cv-muted: color-mix(in srgb, var(--cv-text) 72%, var(--cv-bg));
+      --cv-tint: color-mix(in srgb, var(--cv-text) 6%, transparent);
+    }
+  }
+
+  .crunchy-vet__panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 16px 20px;
+    background: var(--cv-bg);
+    color: var(--cv-text);
+  }
+
+  .crunchy-vet__panel *,
+  .crunchy-vet__panel *::before,
+  .crunchy-vet__panel *::after {
+    box-sizing: border-box;
+  }
+
+  .crunchy-vet__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 16px;
+    font-family: var(--font-heading-family, inherit);
+    font-size: 15px;
+    line-height: 1.2;
+    letter-spacing: normal;
+  }
+
+  .crunchy-vet__eyebrow::before,
+  .crunchy-vet__eyebrow::after {
+    content: '';
+    flex: 1 1 0;
+    height: 1px;
+    background: var(--cv-line);
+  }
+
+  .crunchy-vet__eyebrow-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .crunchy-vet__eyebrow-label svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .crunchy-vet__heading {
+    max-width: 26ch;
+    margin: 0 auto 8px;
+    color: inherit;
+    font-size: 22px;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .crunchy-vet__sub {
+    max-width: 56ch;
+    margin: 0 auto;
+    color: var(--cv-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .crunchy-vet__sub p {
+    display: inline;
+    margin: 0;
+  }
+
+  .crunchy-vet__sub a {
+    color: var(--cv-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .crunchy-vet__link {
+    margin-left: 0.3em;
+  }
+
+  .crunchy-vet__track {
+    display: flex;
+    gap: 12px;
+    margin: 22px -16px 0;
+    padding: 2px 16px 4px;
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+  }
+
+  .crunchy-vet__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .crunchy-vet__card {
+    display: flex;
+    flex: 0 0 86%;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    margin: 0;
+    padding: 18px 16px;
+    border: 1px solid var(--cv-line);
+    border-radius: 14px;
+    background: var(--cv-bg);
+    scroll-snap-align: start;
+  }
+
+  .crunchy-vet__track.is-single .crunchy-vet__card {
+    flex-basis: 100%;
+  }
+
+  .crunchy-vet__person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .crunchy-vet__avatar {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .crunchy-vet__avatar--empty {
+    display: grid;
+    place-items: center;
+    background: var(--cv-tint);
+    color: var(--cv-muted);
+  }
+
+  .crunchy-vet__avatar--empty svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .crunchy-vet__name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .crunchy-vet__name a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .crunchy-vet__verified {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 2px 0 0;
+    color: var(--cv-muted);
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .crunchy-vet__verified svg {
+    flex: none;
+    width: 13px;
+    height: 13px;
+  }
+
+  .crunchy-vet__details {
+    margin: 12px 0 0;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .crunchy-vet__details div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid var(--cv-line);
+  }
+
+  .crunchy-vet__details dt {
+    color: var(--cv-muted);
+  }
+
+  .crunchy-vet__details dd {
+    margin: 0;
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .crunchy-vet__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .crunchy-vet__headline {
+    margin: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: normal;
+    text-transform: none;
+    text-wrap: balance;
+  }
+
+  .crunchy-vet__review {
+    color: var(--cv-muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .crunchy-vet__review p {
+    margin: 0 0 8px;
+  }
+
+  .crunchy-vet__review > :last-child {
+    margin-bottom: 0;
+  }
+
+  .crunchy-vet__review.is-clamped {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+
+  .crunchy-vet__more {
+    width: auto;
+    min-width: 0;
+    height: auto;
+    min-height: 32px;
+    margin: -4px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-align: left;
+    text-decoration: underline;
+    text-transform: none;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .crunchy-vet__more[hidden] {
+    display: none;
+  }
+
+  .crunchy-vet__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--cv-tint);
+    color: inherit;
+    font-size: 11px;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .crunchy-vet__chip svg {
+    flex: none;
+    width: 11px;
+    height: 11px;
+  }
+
+  .crunchy-vet__chip span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .crunchy-vet__highlights {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .crunchy-vet__highlights-label {
+    font-weight: 600;
+  }
+
+  .crunchy-vet__highlights ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .crunchy-vet__highlights li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--cv-muted);
+  }
+
+  .crunchy-vet__highlights li::before {
+    content: '';
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .crunchy-vet__placeholder {
+    margin: 0;
+    padding: 2px 6px;
+    border: 1px dashed var(--cv-line);
+    border-radius: 6px;
+    color: var(--cv-muted);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .crunchy-vet__dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .crunchy-vet__dots[hidden] {
+    display: none;
+  }
+
+  .crunchy-vet__dot {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    min-width: 0;
+    height: 24px;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .crunchy-vet__dot::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.25;
+    transition: width 0.2s ease, opacity 0.2s ease;
+  }
+
+  .crunchy-vet__dot[aria-current='true']::before {
+    width: 18px;
+    opacity: 0.8;
+  }
+
+  .crunchy-vet__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 750px) {
+    .crunchy-vet {
+      padding-inline: 32px;
+    }
+
+    .crunchy-vet__panel {
+      padding: 40px 56px 28px;
+      border: 1px solid var(--cv-line);
+      border-radius: 16px;
+    }
+
+    .crunchy-vet__heading {
+      font-size: 28px;
+    }
+
+    .crunchy-vet__sub {
+      font-size: 14px;
+    }
+
+    .crunchy-vet__track {
+      display: block;
+      margin: 24px 0 0;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .crunchy-vet__card {
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 48px;
+      padding: 26px 0;
+      border: 0;
+      border-radius: 0;
+      background: none;
+    }
+
+    .crunchy-vet__card + .crunchy-vet__card {
+      border-top: 1px solid var(--cv-line);
+    }
+
+    .crunchy-vet__review.is-clamped {
+      -webkit-line-clamp: 3;
+    }
+
+    .crunchy-vet__dots {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crunchy-vet__dot::before {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('crunchy-vet-reviews')) {
+    class CrunchyVetReviews extends HTMLElement {
+      connectedCallback() {
+        // Children aren't parsed yet if this script runs before the section HTML.
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.isConnected && this.init(), { once: true });
+        } else {
+          this.init();
+        }
+      }
+
+      disconnectedCallback() {
+        this.abortController?.abort();
+        this.resizeObserver?.disconnect();
+        this.intersectionObserver?.disconnect();
+      }
+
+      init() {
+        this.abortController = new AbortController();
+        const { signal } = this.abortController;
+        this.track = this.querySelector('[data-track]');
+        this.cards = Array.from(this.querySelectorAll('[data-card]'));
+        this.toggles = Array.from(this.querySelectorAll('[data-more]'));
+
+        this.toggles.forEach((button) => {
+          button.addEventListener('click', () => this.toggle(button), { signal });
+        });
+
+        this.measure = this.measure.bind(this);
+        this.resizeObserver = new ResizeObserver(() => requestAnimationFrame(this.measure));
+        this.resizeObserver.observe(this);
+        this.measure();
+        this.initDots(signal);
+
+        document.addEventListener(
+          'shopify:block:select',
+          (event) => {
+            if (this.cards.includes(event.target)) this.scrollToCard(event.target, false);
+          },
+          { signal }
+        );
+      }
+
+      reviewFor(button) {
+        return document.getElementById(button.getAttribute('aria-controls'));
+      }
+
+      measure() {
+        this.toggles.forEach((button) => {
+          if (button.getAttribute('aria-expanded') === 'true') return;
+          const review = this.reviewFor(button);
+          review.classList.add('is-clamped');
+          button.hidden = review.scrollHeight <= review.clientHeight + 1;
+        });
+      }
+
+      toggle(button) {
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        this.reviewFor(button).classList.toggle('is-clamped', expanded);
+        button.setAttribute('aria-expanded', String(!expanded));
+        button.textContent = expanded ? 'Show more' : 'Show less';
+      }
+
+      initDots(signal) {
+        const dots = this.querySelector('[data-dots]');
+        if (!dots || this.cards.length < 2) return;
+
+        this.dots = this.cards.map((card, index) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'crunchy-vet__dot';
+          dot.setAttribute('aria-label', `Review ${index + 1} of ${this.cards.length}`);
+          dot.addEventListener('click', () => this.scrollToCard(card, true), { signal });
+          return dot;
+        });
+        dots.replaceChildren(...this.dots);
+        dots.hidden = false;
+        this.setActive(0);
+
+        this.intersectionObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.intersectionRatio >= 0.6) this.setActive(this.cards.indexOf(entry.target));
+            });
+          },
+          { root: this.track, threshold: 0.6 }
+        );
+        this.cards.forEach((card) => this.intersectionObserver.observe(card));
+      }
+
+      setActive(index) {
+        this.dots?.forEach((dot, i) => dot.setAttribute('aria-current', String(i === index)));
+      }
+
+      scrollToCard(card, smooth) {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const padding = parseFloat(getComputedStyle(this.track).scrollPaddingLeft) || 0;
+        const left =
+          card.getBoundingClientRect().left - this.track.getBoundingClientRect().left + this.track.scrollLeft - padding;
+        this.track.scrollTo({ left, behavior: smooth && !reduceMotion ? 'smooth' : 'auto' });
+      }
+    }
+
+    customElements.define('crunchy-vet-reviews', CrunchyVetReviews);
+  }
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Vet reviews",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Place this section directly below Product information so it sits under Add to cart on mobile. Each review stays hidden on your live store until it has a name and an evaluation."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Vet Reviews"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Veterinarian Evaluations"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Veterinarians share their professional take on our products.</p>",
+      "info": "Disclose any free product or payment reviewers receive (FTC Endorsement Guides)."
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link label",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "highlights_label",
+      "label": "Highlights label",
+      "default": "Highlights:"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#2B2622"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Vet review",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "photo",
+          "label": "Photo"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Name",
+          "placeholder": "Dr. Jane Smith, DVM"
+        },
+        {
+          "type": "url",
+          "id": "profile_url",
+          "label": "Name link"
+        },
+        {
+          "type": "text",
+          "id": "verified_label",
+          "label": "Verified label",
+          "default": "Verified veterinarian",
+          "info": "Shown with a check badge. Leave blank to hide."
+        },
+        {
+          "type": "text",
+          "id": "detail_1_label",
+          "label": "Detail 1 label",
+          "default": "Specialty"
+        },
+        {
+          "type": "text",
+          "id": "detail_1_value",
+          "label": "Detail 1 value"
+        },
+        {
+          "type": "text",
+          "id": "detail_2_label",
+          "label": "Detail 2 label",
+          "default": "Years in practice"
+        },
+        {
+          "type": "text",
+          "id": "detail_2_value",
+          "label": "Detail 2 value"
+        },
+        {
+          "type": "text",
+          "id": "headline",
+          "label": "Review headline"
+        },
+        {
+          "type": "richtext",
+          "id": "review",
+          "label": "Evaluation",
+          "info": "Use the veterinarian's own words. Long text is trimmed with a Show more link."
+        },
+        {
+          "type": "text",
+          "id": "source_label",
+          "label": "Source chip",
+          "info": "Optional study or reference the vet cites."
+        },
+        {
+          "type": "url",
+          "id": "source_url",
+          "label": "Source link"
+        },
+        {
+          "type": "text",
+          "id": "highlights",
+          "label": "Highlights",
+          "info": "Separate with commas, e.g. Encourages hydration, Easy to clean"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vet reviews",
+      "blocks": [
+        {
+          "type": "review"
+        },
+        {
+          "type": "review"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

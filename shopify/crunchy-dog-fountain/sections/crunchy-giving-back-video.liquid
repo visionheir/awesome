@@ -1,0 +1,524 @@
+{%- liquid
+  assign video = section.settings.video
+  assign video_label = section.settings.video_label | default: section.settings.heading
+-%}
+
+{%- if video != blank or request.design_mode -%}
+  <div
+    class="crunchy-give"
+    style="--cg-bg: {{ section.settings.background }}; --cg-text: {{ section.settings.text_color }}; --cg-pt: {{ section.settings.padding_top }}px; --cg-pb: {{ section.settings.padding_bottom }}px;"
+  >
+    <section
+      class="crunchy-give__panel"
+      {% if section.settings.heading != blank %}
+        aria-labelledby="CrunchyGiveHeading-{{ section.id }}"
+      {% endif %}
+    >
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="crunchy-give__eyebrow">
+          <span class="crunchy-give__eyebrow-label">
+            <span aria-hidden="true">(</span>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/></svg>
+            {{ section.settings.eyebrow | escape }}
+            <span aria-hidden="true">)</span>
+          </span>
+        </p>
+      {%- endif -%}
+
+      <div class="crunchy-give__grid">
+        {%- if section.settings.heading != blank -%}
+          <h2 id="CrunchyGiveHeading-{{ section.id }}" class="crunchy-give__heading">
+            {{ section.settings.heading | escape }}
+          </h2>
+        {%- endif -%}
+
+        {%- if video != blank -%}
+          <crunchy-give-video class="crunchy-give__media" style="--cg-ratio: {{ video.aspect_ratio | default: 1.7778 }};">
+            <button type="button" class="crunchy-give__play" aria-label="Play video: {{ video_label | escape }}">
+              {%- liquid
+                assign cover = section.settings.cover_image | default: video.preview_image
+                if cover != blank
+                  echo cover | image_url: width: 1500 | image_tag: loading: 'lazy', widths: '375, 550, 750, 1100, 1500', sizes: '(min-width: 1150px) 560px, (min-width: 750px) 50vw, calc(100vw - 32px)', alt: '', class: 'crunchy-give__poster'
+                endif
+              -%}
+              <span class="crunchy-give__play-icon" aria-hidden="true">
+                <svg focusable="false" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+              </span>
+            </button>
+            <template>
+              {{ video | video_tag: controls: true, playsinline: true, preload: 'auto', class: 'crunchy-give__video' }}
+            </template>
+          </crunchy-give-video>
+        {%- elsif request.design_mode -%}
+          <div class="crunchy-give__media crunchy-give__media--empty" style="--cg-ratio: 1.7778;">
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'crunchy-give__placeholder' }}
+            <p class="crunchy-give__placeholder-note">Select the Humane Society donation video in this section's settings.</p>
+          </div>
+        {%- endif -%}
+
+        <div class="crunchy-give__copy">
+          {%- if section.settings.text != blank -%}
+            <div class="crunchy-give__text">{{ section.settings.text }}</div>
+          {%- endif -%}
+
+          {%- if section.settings.highlights != blank -%}
+            {%- assign highlights = section.settings.highlights | split: ',' -%}
+            <ul class="crunchy-give__highlights" role="list">
+              {%- for highlight in highlights -%}
+                {%- assign highlight = highlight | strip -%}
+                {%- if highlight != blank -%}
+                  <li>{{ highlight | escape }}</li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          {%- if section.settings.link_url != blank and section.settings.link_label != blank -%}
+            <a class="crunchy-give__link" href="{{ section.settings.link_url }}">
+              {{- section.settings.link_label | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    </section>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .crunchy-give {
+    --cg-line: rgba(0, 0, 0, 0.12);
+    --cg-muted: var(--cg-text);
+    --cg-tint: rgba(0, 0, 0, 0.05);
+    display: block;
+    padding: var(--cg-pt) 0 var(--cg-pb);
+  }
+
+  @supports (color: color-mix(in srgb, red 50%, blue)) {
+    .crunchy-give {
+      --cg-line: color-mix(in srgb, var(--cg-text) 16%, transparent);
+      --cg-muted: color-mix(in srgb, var(--cg-text) 72%, var(--cg-bg));
+      --cg-tint: color-mix(in srgb, var(--cg-text) 6%, transparent);
+    }
+  }
+
+  .crunchy-give__panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 16px;
+    background: var(--cg-bg);
+    color: var(--cg-text);
+  }
+
+  .crunchy-give__panel *,
+  .crunchy-give__panel *::before,
+  .crunchy-give__panel *::after {
+    box-sizing: border-box;
+  }
+
+  .crunchy-give__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 16px;
+    font-family: var(--font-heading-family, inherit);
+    font-size: 15px;
+    line-height: 1.2;
+    letter-spacing: normal;
+  }
+
+  .crunchy-give__eyebrow::before,
+  .crunchy-give__eyebrow::after {
+    content: '';
+    flex: 1 1 0;
+    height: 1px;
+    background: var(--cg-line);
+  }
+
+  .crunchy-give__eyebrow-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .crunchy-give__eyebrow-label svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .crunchy-give__grid {
+    display: grid;
+    grid-template-areas:
+      'heading'
+      'media'
+      'copy';
+    gap: 16px;
+  }
+
+  .crunchy-give__heading {
+    grid-area: heading;
+    max-width: 26ch;
+    margin: 0 auto;
+    color: inherit;
+    font-size: 22px;
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .crunchy-give__media {
+    grid-area: media;
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: calc(560px * var(--cg-ratio));
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #1f1a16;
+    aspect-ratio: var(--cg-ratio);
+  }
+
+  .crunchy-give__play {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    color: #fff;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .crunchy-give__play:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: -6px;
+  }
+
+  .crunchy-give__poster {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .crunchy-give__play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #2b2622;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s ease;
+  }
+
+  .crunchy-give__play-icon svg {
+    width: 22px;
+    height: 22px;
+    margin-left: 3px;
+  }
+
+  .crunchy-give__play:hover .crunchy-give__play-icon {
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+
+  .crunchy-give__media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    object-fit: contain;
+  }
+
+  .crunchy-give__media--empty {
+    display: grid;
+    place-items: center;
+    background: var(--cg-tint);
+  }
+
+  .crunchy-give__placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+    opacity: 0.2;
+  }
+
+  .crunchy-give__placeholder-note {
+    position: relative;
+    max-width: 30ch;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--cg-bg);
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .crunchy-give__copy {
+    grid-area: copy;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .crunchy-give__text {
+    max-width: 52ch;
+    color: var(--cg-muted);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .crunchy-give__text p {
+    margin: 0 0 8px;
+  }
+
+  .crunchy-give__text > :last-child {
+    margin-bottom: 0;
+  }
+
+  .crunchy-give__highlights {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    list-style: none;
+  }
+
+  .crunchy-give__highlights li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--cg-muted);
+  }
+
+  .crunchy-give__highlights li::before {
+    content: '';
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .crunchy-give__link {
+    color: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (min-width: 750px) {
+    .crunchy-give {
+      padding-inline: 32px;
+    }
+
+    .crunchy-give__panel {
+      padding: 40px 56px;
+      border: 1px solid var(--cg-line);
+      border-radius: 16px;
+    }
+
+    .crunchy-give__grid {
+      grid-template-areas:
+        'media .'
+        'media heading'
+        'media copy'
+        'media .';
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      grid-template-rows: 1fr auto auto 1fr;
+      column-gap: 48px;
+      row-gap: 12px;
+    }
+
+    .crunchy-give__heading {
+      margin: 0;
+      font-size: 28px;
+      text-align: left;
+    }
+
+    .crunchy-give__copy {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .crunchy-give__highlights {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crunchy-give__play-icon {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  if (!customElements.get('crunchy-give-video')) {
+    class CrunchyGiveVideo extends HTMLElement {
+      connectedCallback() {
+        // Children aren't parsed yet if this script runs before the section HTML.
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.isConnected && this.init(), { once: true });
+        } else {
+          this.init();
+        }
+      }
+
+      disconnectedCallback() {
+        this.abortController?.abort();
+      }
+
+      init() {
+        this.abortController = new AbortController();
+        this.querySelector('.crunchy-give__play')?.addEventListener('click', () => this.play(), {
+          once: true,
+          signal: this.abortController.signal,
+        });
+      }
+
+      play() {
+        const template = this.querySelector('template');
+        if (!template) return;
+        const video = document.importNode(template.content, true).querySelector('video');
+        if (!video) return;
+        this.querySelector('.crunchy-give__play').replaceWith(video);
+        video.focus({ preventScroll: true });
+        video.play()?.catch(() => {});
+      }
+    }
+
+    customElements.define('crunchy-give-video', CrunchyGiveVideo);
+  }
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Giving back video",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Giving Back"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Proud to support the Humane Society"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>We're proud to give back to the shelters that care for pets in our communities. Watch our donation to the Humane Society.</p>"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video",
+      "info": "Upload the Humane Society donation MP4 here. Shopify hosts it, and it only loads when a shopper taps play. The section stays hidden on your live store until a video is selected."
+    },
+    {
+      "type": "image_picker",
+      "id": "cover_image",
+      "label": "Cover image",
+      "info": "Optional. Defaults to the video's preview image."
+    },
+    {
+      "type": "text",
+      "id": "video_label",
+      "label": "Video description",
+      "default": "Our donation to the Humane Society",
+      "info": "Read by screen readers on the play button."
+    },
+    {
+      "type": "text",
+      "id": "highlights",
+      "label": "Highlights",
+      "info": "Optional. Separate with commas, e.g. Shelter pets, Local rescues"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link label",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#2B2622"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Giving back video"
+    }
+  ]
+}
+{% endschema %}
