@@ -11,56 +11,119 @@
   else
     assign card_count = ready_count
   endif
+
+  assign compact = false
+  if section.settings.layout == 'compact'
+    assign compact = true
+  endif
 -%}
 
 {%- if card_count > 0 or request.design_mode -%}
   <crunchy-vet-reviews
-    class="crunchy-vet"
+    class="crunchy-vet crunchy-vet--{{ section.settings.layout }}"
     style="--cv-bg: {{ section.settings.background }}; --cv-text: {{ section.settings.text_color }}; --cv-pt: {{ section.settings.padding_top }}px; --cv-pb: {{ section.settings.padding_bottom }}px;"
   >
     <section
       class="crunchy-vet__panel"
-      {% if section.settings.heading != blank %}
+      {% if compact %}
+        aria-label="{{ section.settings.eyebrow | default: 'Vet reviews' | escape }}"
+      {% elsif section.settings.heading != blank %}
         aria-labelledby="CrunchyVetHeading-{{ section.id }}"
       {% endif %}
     >
-      {%- if section.settings.eyebrow != blank -%}
-        <p class="crunchy-vet__eyebrow">
-          <span class="crunchy-vet__eyebrow-label">
-            <span aria-hidden="true">(</span>
-            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3H5a1 1 0 0 0-1 1v5a5 5 0 0 0 10 0V4a1 1 0 0 0-1-1h-1"/><path d="M9 14v1a5 5 0 0 0 10 0v-2"/><circle cx="19" cy="11" r="2"/></svg>
-            {{ section.settings.eyebrow | escape }}
-            <span aria-hidden="true">)</span>
-          </span>
-        </p>
-      {%- endif -%}
+      {%- unless compact -%}
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="crunchy-vet__eyebrow">
+            <span class="crunchy-vet__eyebrow-label">
+              <span aria-hidden="true">(</span>
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3H5a1 1 0 0 0-1 1v5a5 5 0 0 0 10 0V4a1 1 0 0 0-1-1h-1"/><path d="M9 14v1a5 5 0 0 0 10 0v-2"/><circle cx="19" cy="11" r="2"/></svg>
+              {{ section.settings.eyebrow | escape }}
+              <span aria-hidden="true">)</span>
+            </span>
+          </p>
+        {%- endif -%}
 
-      {%- if section.settings.heading != blank -%}
-        <h2 id="CrunchyVetHeading-{{ section.id }}" class="crunchy-vet__heading">
-          {{ section.settings.heading | escape }}
-        </h2>
-      {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 id="CrunchyVetHeading-{{ section.id }}" class="crunchy-vet__heading">
+            {{ section.settings.heading | escape }}
+          </h2>
+        {%- endif -%}
 
-      {%- if section.settings.subheading != blank or section.settings.link_url != blank -%}
-        <div class="crunchy-vet__sub">
-          {{ section.settings.subheading }}
-          {%- if section.settings.link_url != blank and section.settings.link_label != blank -%}
-            <a class="crunchy-vet__link" href="{{ section.settings.link_url }}">
-              {{- section.settings.link_label | escape -}}
-            </a>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
+        {%- if section.settings.subheading != blank or section.settings.link_url != blank -%}
+          <div class="crunchy-vet__sub">
+            {{ section.settings.subheading }}
+            {%- if section.settings.link_url != blank and section.settings.link_label != blank -%}
+              <a class="crunchy-vet__link" href="{{ section.settings.link_url }}">
+                {{- section.settings.link_label | escape -}}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endunless -%}
 
       <ul class="crunchy-vet__track{% if card_count == 1 %} is-single{% endif %}" role="list" data-track>
         {%- for block in section.blocks -%}
           {%- liquid
-            assign is_ready = false
+            assign show_card = request.design_mode
             if block.settings.title != blank and block.settings.review != blank
-              assign is_ready = true
+              assign show_card = true
             endif
           -%}
-          {%- if is_ready or request.design_mode -%}
+          {%- if show_card and compact -%}
+            <li class="crunchy-vet__card" data-card {{ block.shopify_attributes }}>
+              <div class="crunchy-vet__quote">
+                {%- if block.settings.photo != blank -%}
+                  {{
+                    block.settings.photo
+                    | image_url: width: 400
+                    | image_tag:
+                      width: 132,
+                      height: 132,
+                      widths: '84, 168, 264, 396',
+                      sizes: '(min-width: 750px) 132px, 84px',
+                      loading: 'lazy',
+                      alt: '',
+                      class: 'crunchy-vet__quote-photo'
+                  }}
+                {%- else -%}
+                  <span class="crunchy-vet__quote-photo crunchy-vet__avatar--empty" aria-hidden="true">
+                    <svg focusable="false" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="16.5" rx="4.6" ry="3.8"/><ellipse cx="6.2" cy="10.6" rx="1.9" ry="2.4"/><ellipse cx="9.6" cy="6.6" rx="1.9" ry="2.5"/><ellipse cx="14.4" cy="6.6" rx="1.9" ry="2.5"/><ellipse cx="17.8" cy="10.6" rx="1.9" ry="2.4"/></svg>
+                  </span>
+                {%- endif -%}
+                <div class="crunchy-vet__quote-body">
+                  {%- if block.settings.review != blank -%}
+                    <blockquote id="CrunchyVetReview-{{ section.id }}-{{ block.id }}" class="crunchy-vet__review crunchy-vet__quote-text">
+                      {{ block.settings.review }}
+                    </blockquote>
+                    <button
+                      type="button"
+                      class="crunchy-vet__more"
+                      aria-expanded="false"
+                      aria-controls="CrunchyVetReview-{{ section.id }}-{{ block.id }}"
+                      data-more
+                      hidden
+                    >
+                      Show more
+                    </button>
+                  {%- else -%}
+                    <p class="crunchy-vet__placeholder">
+                      Add the veterinarian's quote. It stays hidden on your live store until a name and quote are added.
+                    </p>
+                  {%- endif -%}
+                  <p class="crunchy-vet__quote-by">
+                    {%- if block.settings.title == blank -%}
+                      <span class="crunchy-vet__placeholder">Veterinarian name</span>
+                    {%- elsif block.settings.profile_url != blank -%}
+                      <a href="{{ block.settings.profile_url }}"><strong>{{ block.settings.title | escape }}</strong></a>
+                    {%- else -%}
+                      <strong>{{ block.settings.title | escape }}</strong>
+                    {%- endif -%}
+                    {%- if block.settings.verified_label != blank %} · {{ block.settings.verified_label | escape }}{% endif -%}
+                  </p>
+                </div>
+              </div>
+            </li>
+          {%- elsif show_card -%}
             <li class="crunchy-vet__card" data-card {{ block.shopify_attributes }}>
               <div class="crunchy-vet__profile">
                 <div class="crunchy-vet__person">
@@ -199,7 +262,7 @@
   @supports (color: color-mix(in srgb, red 50%, blue)) {
     .crunchy-vet {
       --cv-line: color-mix(in srgb, var(--cv-text) 16%, transparent);
-      --cv-muted: color-mix(in srgb, var(--cv-text) 72%, var(--cv-bg));
+      --cv-muted: color-mix(in srgb, var(--cv-text) 80%, var(--cv-bg));
       --cv-tint: color-mix(in srgb, var(--cv-text) 6%, transparent);
     }
   }
@@ -438,6 +501,84 @@
     -webkit-line-clamp: 4;
   }
 
+  .crunchy-vet--compact .crunchy-vet__panel {
+    max-width: 880px;
+    padding: 0 16px;
+    background: none;
+  }
+
+  .crunchy-vet--compact .crunchy-vet__track {
+    margin-top: 0;
+  }
+
+  .crunchy-vet--compact .crunchy-vet__card {
+    padding: 14px;
+    border-color: transparent;
+  }
+
+  .crunchy-vet__quote {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .crunchy-vet__quote-photo {
+    flex: none;
+    width: 84px;
+    height: 84px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .crunchy-vet__quote-photo svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .crunchy-vet__quote-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .crunchy-vet__quote-text {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cv-text);
+    font-size: 17px;
+    font-style: normal;
+    line-height: 1.5;
+    quotes: none;
+  }
+
+  .crunchy-vet__quote-text > :first-child::before {
+    content: '\201C';
+  }
+
+  .crunchy-vet__quote-text > :last-child::after {
+    content: '\201D';
+  }
+
+  .crunchy-vet__quote-by {
+    margin: 0;
+    color: var(--cv-muted);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .crunchy-vet__quote-by strong {
+    font-weight: 700;
+  }
+
+  .crunchy-vet__quote-by a {
+    color: inherit;
+    text-underline-offset: 2px;
+  }
+
   .crunchy-vet__more {
     width: auto;
     min-width: 0;
@@ -641,6 +782,50 @@
     .crunchy-vet__dots {
       display: none;
     }
+
+    .crunchy-vet--compact .crunchy-vet__panel {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .crunchy-vet--compact .crunchy-vet__track {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 16px;
+      margin: 0;
+    }
+
+    .crunchy-vet--compact .crunchy-vet__card {
+      display: block;
+      padding: 20px 24px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--cv-bg);
+    }
+
+    .crunchy-vet--compact .crunchy-vet__review.is-clamped {
+      -webkit-line-clamp: 4;
+    }
+
+    .crunchy-vet__quote {
+      gap: 24px;
+    }
+
+    .crunchy-vet__quote-photo {
+      width: 132px;
+      height: 132px;
+      border-radius: 11px;
+    }
+
+    .crunchy-vet__quote-text {
+      font-size: 22px;
+      line-height: 1.55;
+    }
+
+    .crunchy-vet__quote-by {
+      font-size: 16px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -764,7 +949,28 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Place this section directly below Product information so it sits under Add to cart on mobile. Each review stays hidden on your live store until it has a name and an evaluation."
+      "content": "Place this section directly below Product information so it sits under Add to cart on mobile. Each review stays hidden on your live store until it has a name and a quote."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Style",
+      "options": [
+        {
+          "value": "compact",
+          "label": "Compact quote"
+        },
+        {
+          "value": "detailed",
+          "label": "Detailed evaluation"
+        }
+      ],
+      "default": "compact",
+      "info": "Compact shows the photo, quote and name, sized for under Add to cart. Detailed adds the heading, details, sources and highlights."
+    },
+    {
+      "type": "header",
+      "content": "Detailed style heading"
     },
     {
       "type": "text",
@@ -810,13 +1016,13 @@
       "type": "color",
       "id": "background",
       "label": "Background",
-      "default": "#FFFFFF"
+      "default": "#F4E4D2"
     },
     {
       "type": "color",
       "id": "text_color",
       "label": "Text",
-      "default": "#2B2622"
+      "default": "#372F2E"
     },
     {
       "type": "header",
@@ -869,8 +1075,8 @@
           "type": "text",
           "id": "verified_label",
           "label": "Verified label",
-          "default": "Verified veterinarian",
-          "info": "Shown with a check badge. Leave blank to hide."
+          "default": "Verified review",
+          "info": "Shown after the name. Leave blank to hide."
         },
         {
           "type": "text",
@@ -902,8 +1108,8 @@
         {
           "type": "richtext",
           "id": "review",
-          "label": "Evaluation",
-          "info": "Use the veterinarian's own words. Long text is trimmed with a Show more link."
+          "label": "Quote",
+          "info": "Use the veterinarian's own words. Compact style adds the quotation marks. Long text is trimmed with a Show more link."
         },
         {
           "type": "text",
@@ -930,10 +1136,11 @@
       "name": "Vet reviews",
       "blocks": [
         {
-          "type": "review"
-        },
-        {
-          "type": "review"
+          "type": "review",
+          "settings": {
+            "title": "Dr. Buck, DVM",
+            "review": "<p>Safe, thoughtfully made, and my dog genuinely loves it.</p>"
+          }
         }
       ]
     }
